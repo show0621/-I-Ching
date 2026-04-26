@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>易鏡｜E-Ching 數位卜卦卡</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f1ea;
+            --text-color: #4a4a4a;
+            --accent-color: #8c7e6a;
+        }
+
+        body {
+            font-family: 'Noto Serif TC', serif;
+            background-color: var(--bg-color);
+            background-image: url('https://www.transparenttextures.com/patterns/handmade-paper.png');
+            color: var(--text-color);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* 3D 骰子樣式 */
+        .dice-scene {
+            width: 60px;
+            height: 60px;
+            perspective: 300px;
+        }
+        .dice {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1.5s cubic-bezier(0.17, 0.67, 0.1, 1);
+        }
+        .dice-face {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
+            color: var(--text-color);
+        }
+        /* 定義骰子六面位置 */
+        .face-1 { transform: rotateY(0deg) translateZ(30px); }
+        .face-2 { transform: rotateY(90deg) translateZ(30px); }
+        .face-3 { transform: rotateY(180deg) translateZ(30px); }
+        .face-4 { transform: rotateY(-90deg) translateZ(30px); }
+        .face-5 { transform: rotateX(90deg) translateZ(30px); }
+        .face-6 { transform: rotateX(-90deg) translateZ(30px); }
+
+        /* 卡牌翻轉動畫 */
+        .card-container {
+            perspective: 1200px;
+            width: 340px;
+            height: 560px;
+        }
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+        }
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        .card-back {
+            background: linear-gradient(135deg, #d4cfc3 0%, #b8b1a1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-back::after {
+            content: "易";
+            font-size: 5rem;
+            color: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.2);
+            padding: 20px;
+        }
+        .card-front {
+            background: white;
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hipster-img {
+            height: 55%;
+            background-size: cover;
+            background-position: center;
+            filter: sepia(20%) brightness(95%);
+        }
+
+        .btn-glow:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .float-anim { animation: float 4s ease-in-out infinite; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-12 px-4">
+
+    <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold tracking-[0.3em] mb-4 text-stone-800">易鏡</h1>
+        <div class="h-[1px] w-20 bg-stone-400 mx-auto mb-4"></div>
+        <p class="text-stone-500 font-light tracking-widest text-sm uppercase">The Aesthetic I-Ching Oracle</p>
+    </header>
+
+    <main class="w-full max-w-lg flex flex-col items-center">
+        <div class="flex justify-center gap-6 md:gap-12 mb-16">
+            <div class="text-center">
+                <span class="text-[10px] tracking-widest text-stone-400 uppercase mb-3 block">Upper / 上卦</span>
+                <div class="dice-scene">
+                    <div id="dice1" class="dice">
+                        <div class="dice-face face-1">乾</div><div class="dice-face face-2">兌</div>
+                        <div class="dice-face face-3">離</div><div class="dice-face face-4">震</div>
+                        <div class="dice-face face-5">巽</div><div class="dice-face face-6">坎</div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center">
+                <span class="text-[10px] tracking-widest text-stone-400 uppercase mb-3 block">Lower / 下卦</span>
+                <div class="dice-scene">
+                    <div id="dice2" class="dice">
+                        <div class="dice-face face-1">坤</div><div class="dice-face face-2">艮</div>
+                        <div class="dice-face face-3">坎</div><div class="dice-face face-4">巽</div>
+                        <div class="dice-face face-5">震</div><div class="dice-face face-6">離</div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center">
+                <span class="text-[10px] tracking-widest text-stone-400 uppercase mb-3 block">Line / 變爻</span>
+                <div class="dice-scene">
+                    <div id="dice3" class="dice">
+                        <div class="dice-face face-1">1</div><div class="dice-face face-2">2</div>
+                        <div class="dice-face face-3">3</div><div class="dice-face face-4">4</div>
+                        <div class="dice-face face-5">5</div><div class="dice-face face-6">6</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="castOracle()" id="castBtn" class="btn-glow bg-stone-800 text-stone-100 px-12 py-4 rounded-full text-sm tracking-[0.2em] shadow-xl hover:bg-stone-700 transition-all duration-300 mb-20">
+            開始卜卦
+        </button>
+
+        <div id="resultSection" class="hidden flex flex-col items-center w-full fade-in">
+            <div class="card-container float-anim">
+                <div id="mainCard" class="card" onclick="flipCard()">
+                    <div class="card-face card-back"></div>
+                    <div id="cardFront" class="card-face card-front">
+                        </div>
+                </div>
+            </div>
+            <p id="hintText" class="mt-8 text-stone-400 text-xs tracking-widest animate-pulse">點擊卡片以揭示卦象</p>
+        </div>
+    </main>
+
+    <footer class="mt-20 pb-10 text-stone-400 text-[10px] tracking-widest uppercase">
+        © 2026 Crafted for Meng-Lin
+    </footer>
+
+    <script>
+        const trigrams = ["乾", "兌", "離", "震", "巽", "坎", "艮", "坤"];
+        
+        // 完整的 64 卦資料庫 (擷取核心供展示，可自行依樣擴充至 64 組)
+        const hexagramData = {
+            "乾乾": { id: "01", name: "乾為天", level: "上上卦", keywords: "開創 / 剛健 / 恆久", desc: "天行健，君子以自強不息。像星辰運轉一樣，保持你的節奏，這不是等待的時刻，而是奔跑的時刻。" },
+            "坤坤": { id: "02", name: "坤為地", level: "上上卦", keywords: "厚德 / 包容 / 溫柔", desc: "地勢坤，君子以厚德載物。像大地一樣安靜地承載，現在適合退居幕後，用溫柔的力量去支持他人。" },
+            "坎震": { id: "03", name: "水雷屯", level: "中下卦", keywords: "草創 / 萌芽 / 艱難", desc: "雲雷屯，君子以經綸。像剛破土的嫩芽，雖然環境艱辛，但生命力正在暗處蓄積，請給自己一點耐心。" },
+            "艮坎": { id: "04", name: "山水蒙", level: "中下卦", keywords: "啟蒙 / 迷霧 / 學習", desc: "山下出泉，蒙。在迷霧中尋找出口，承認自己的無知是智慧的開始。適合找一位導師或安靜閱讀。" },
+            "坎乾": { id: "05", name: "水天需", level: "中上卦", keywords: "等待 / 蓄勢 / 飲食", desc: "雲上於天，需。雲還沒變成雨，時機尚未成熟。不如放下焦慮，好好吃一頓飯，享受當下的等待。" },
+            "乾坎": { id: "06", name: "天水訟", level: "下下卦", keywords: "爭執 / 理性 / 止損", desc: "天與水違行，訟。道不同不相為謀，與其在爭辯中消耗能量，不如及早抽身，保持內心的和平。" },
+            "離離": { id: "30", name: "離為火", level: "中上卦", keywords: "光明 / 依附 / 睿智", desc: "明兩作，離。美麗的火花需要依附於木柴。找到你的依託，發揮你的智慧，照亮周遭的人。" },
+            "坎坎": { id: "29", name: "坎為水", level: "下下卦", keywords: "重險 / 誠信 / 流動", desc: "水洊至，習坎。身處重重困境，唯有像水一樣保持信念，靈活流動，才能穿過險灘。" },
+            // ... 其餘 56 卦可依此類推
+        };
+
+        // 隨機旋轉函數
+        function getRandomRotation() {
+            const rotations = [
+                [0, 0, 0], [0, 90, 0], [0, 180, 0], [0, -90, 0], [90, 0, 0], [-90, 0, 0]
+            ];
+            return rotations[Math.floor(Math.random() * rotations.length)];
+        }
+
+        function castOracle() {
+            const btn = document.getElementById('castBtn');
+            const resultSection = document.getElementById('resultSection');
+            const card = document.getElementById('mainCard');
+            
+            btn.disabled = true;
+            btn.innerText = "感應卦象中...";
+            card.classList.remove('is-flipped');
+            
+            // 執行骰子旋轉動畫
+            const diceIds = ['dice1', 'dice2', 'dice3'];
+            const results = [];
+
+            diceIds.forEach((id, index) => {
+                const el = document.getElementById(id);
+                // 增加隨機圈數讓動畫更真實
+                const extraSpin = 720 + Math.random() * 720;
+                const rot = getRandomRotation();
+                el.style.transform = `rotateX(${rot[0] + extraSpin}deg) rotateY(${rot[1] + extraSpin}deg) rotateZ(${Math.random()*90}deg)`;
+                
+                // 模擬抓取該面文字
+                setTimeout(() => {
+                    // 這裡簡化邏輯，直接隨機決定結果卦名
+                    const randomTrigram = trigrams[Math.floor(Math.random() * 8)];
+                    results.push(randomTrigram);
+                }, 1500);
+            });
+
+            // 1.5秒後顯示結果
+            setTimeout(() => {
+                const upper = trigrams[Math.floor(Math.random() * 8)];
+                const lower = trigrams[Math.floor(Math.random() * 8)];
+                const change = Math.floor(Math.random() * 6) + 1;
+                
+                renderCard(upper, lower, change);
+                
+                resultSection.classList.remove('hidden');
+                resultSection.scrollIntoView({ behavior: 'smooth' });
+                btn.disabled = false;
+                btn.innerText = "重新卜卦";
+            }, 1600);
+        }
+
+        function renderCard(up, low, change) {
+            const key = up + low;
+            const data = hexagramData[key] || { 
+                id: "??", 
+                name: `${up}${low}卦`, 
+                level: "平卦", 
+                keywords: "自然 / 觀察 / 靜心", 
+                desc: "卦象顯示：凡事不可強求，順應天時地利。當下適合靜坐思考，釐清內心的真正需求。" 
+            };
+
+            const cardFront = document.getElementById('cardFront');
+            cardFront.innerHTML = `
+                <div class="hipster-img" style="background-image: url('https://picsum.photos/seed/${data.id}/600/800')">
+                    <div class="absolute top-4 right-4 bg-white/90 text-[10px] px-2 py-1 tracking-widest rounded">NO.${data.id}</div>
+                </div>
+                <div class="p-8 flex flex-col flex-grow">
+                    <div class="flex justify-between items-baseline mb-4">
+                        <h2 class="text-3xl font-bold tracking-tighter text-stone-800">${data.name}</h2>
+                        <span class="text-[10px] text-stone-400 font-sans uppercase">${up}上 ${low}下</span>
+                    </div>
+                    <p class="text-[10px] tracking-[0.2em] text-stone-400 mb-6 font-sans uppercase border-b pb-2">${data.keywords}</p>
+                    <p class="text-sm leading-relaxed text-stone-600 font-light flex-grow">
+                        ${data.desc}
+                    </p>
+                    <div class="mt-6 flex justify-between items-center text-[9px] text-stone-300 tracking-widest">
+                        <span>變爻：第 ${change} 爻</span>
+                        <span class="italic font-serif">I-CHING ORACLE</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function flipCard() {
+            const card = document.getElementById('mainCard');
+            const hint = document.getElementById('hintText');
+            card.classList.toggle('is-flipped');
+            hint.style.opacity = '0';
+        }
+    </script>
+</body>
+</html>
