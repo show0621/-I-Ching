@@ -1,19 +1,19 @@
 import streamlit as st
 
-# 1. 頁面設定 (保持不變)
+# 1. 頁面設定 (保持寬版)
 st.set_page_config(page_title="易鏡 - 文青卜卦", layout="wide")
 
-# 2. 你的完整 HTML 程式碼字串 (保持不變)
+# 2. 你的完整 HTML 程式碼字串
 html_code = """
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <title>易鏡</title>
-    </body>
+    </head>
+<body>
+    ...
+</body>
 </html>
 """
 
-# 3. 【修改這裡】移除原本的 components.html(...)
-# 改用新的官方建議語法來渲染 HTML 字串
-st.html(html_code)
+# 3. 【修正這裡】使用最新的 st.iframe 來建立獨立的沙盒環境
+st.iframe(html=html_code, height=1200, scrolling=True)
